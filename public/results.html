@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="results.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Nearby Stores</h1>
+        <p id="greeting"></p>
+        <ul id="storeResults"></ul>
+        
+        <!-- Button container with Previous button -->
+        <div class="button-container">
+            <button type="button" onclick="history.back()">Previous</button>
+        </div>
+    </div>
+
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name');
+        const details = urlParams.get('details');
+        const zipCode = urlParams.get('zipCode');
+        const category = urlParams.get('category');
+
+        // Display a personalized greeting
+        const greetingElement = document.getElementById('greeting');
+        greetingElement.textContent = `Hello ${name}, below are the stores for you near by ${details} for the category "${category}"`;
+
+        console.log('Fetching stores for ZIP:', zipCode, 'and Category:', category);
+
+        fetch('/find-stores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                zipCode: zipCode,
+                category: category
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const storeResults = document.getElementById('storeResults');
+            if (data.length === 0) {
+                storeResults.innerHTML = '<li>No stores found for the given ZIP code and category.</li>';
+            } else {
+                data.forEach(store => {
+                    const li = document.createElement('li');
+                    li.textContent = `${store.Address}, ${store.State}, ${store.Zip_Code}`;
+                    storeResults.appendChild(li);
+                });
+            }
+        })
+        .catch(error => console.error('Error fetching stores:', error));
+    </script>
+</body>
+</html>
